@@ -14,7 +14,6 @@ from uuid import uuid4
 from base64 import b64decode, b64encode
 import random
 
-from bot import bot_cache, FSUB_API
 from ....core.config_manager import Config
 from ...ext_utils.exceptions import DirectDownloadLinkException
 from ...ext_utils.help_messages import PASSWORD_ERROR_MESSAGE
