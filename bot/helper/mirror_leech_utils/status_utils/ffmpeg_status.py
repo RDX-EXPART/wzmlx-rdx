@@ -1,4 +1,4 @@
-from .... import LOGGER
+from ... import LOGGER
 from ...ext_utils.status_utils import (
     get_readable_file_size,
     EngineStatus,
@@ -6,8 +6,7 @@ from ...ext_utils.status_utils import (
     get_readable_time,
 )
 
-
-class FFmpegStatus:
+class FfmpegStatus:
     def __init__(self, listener, obj, gid, status=""):
         self.listener = listener
         self._obj = obj
@@ -37,14 +36,7 @@ class FFmpegStatus:
         return get_readable_time(self._obj.eta_raw) if self._obj.eta_raw else "-"
 
     def status(self):
-        if self._cstatus == "Convert":
-            return MirrorStatus.STATUS_CONVERT
-        elif self._cstatus == "Split":
-            return MirrorStatus.STATUS_SPLIT
-        elif self._cstatus == "Sample Video":
-            return MirrorStatus.STATUS_SAMVID
-        else:
-            return MirrorStatus.STATUS_FFMPEG
+        return self._cstatus
 
     def task(self):
         return self
@@ -52,12 +44,12 @@ class FFmpegStatus:
     async def cancel_task(self):
         LOGGER.info(f"Cancelling {self._cstatus}: {self.listener.name}")
         self.listener.is_cancelled = True
-        if (
-            self.listener.subproc is not None
-            and self.listener.subproc.returncode is None
-        ):
+        if self.listener._subprocess and self.listener._subprocess.returncode is None:
             try:
-                self.listener.subproc.kill()
+                self.listener._subprocess.kill()
             except Exception:
                 pass
         await self.listener.on_upload_error(f"{self._cstatus} stopped by user!")
+
+# এই লাইনটা জরুরি - ক্লাস এক্সপোর্ট করার জন্য
+__all__ = ['FfmpegStatus']
