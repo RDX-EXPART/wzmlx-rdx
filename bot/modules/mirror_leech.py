@@ -102,8 +102,22 @@ class Mirror(TaskListener):
     text = self.message.text.split("\n")
     input_list = text[0].split(" ")
 
-    # Video Tool ফ্ল্যাগ চেক - WZML-X এর জন্য
-    if any(flag in input_list for flag in ['-vt', '--vt', '--videotool']):
+    async def new_event(self):
+    text = self.message.text.split("\n")
+    input_list = text[0].split(" ")
+
+    # -vt + -e কম্বো চেক - চেইন মোড
+    if any(flag in input_list for flag in ['-vt', '--vt']) and '-e' in input_list:
+        if not self.link:
+            return await send_message(self.message, "লিঙ্ক দিন: `/leech link -e -vt`")
+
+        # ফ্ল্যাগ সেট করে নরমাল আনজিপ প্রসেস চালান
+        self.is_vt_chain = True # চেইন মোড অন
+        self.extract = True # -e এর কাজ
+        # নিচের নরমাল কোড চলবে, আনজিপের পর অটো মার্জ কল হবে
+
+    # শুধু -vt, রিপ্লাই করা ফাইলের জন্য
+    elif any(flag in input_list for flag in ['-vt', '--vt']):
         if not self.message.reply_to_message:
             return await send_message(
                 self.message,
@@ -112,7 +126,7 @@ class Mirror(TaskListener):
         return await merge_handler(self.client, self.message)
 
     check_msg, check_button = await pre_task_check(self.message)
-    #... বাকি অরিজিনাল কোড
+    #... বাকি কোড অপরিবর্তিত
 
         check_msg, check_button = await pre_task_check(self.message)
         if check_msg:
@@ -504,3 +518,32 @@ async def nzb_leech(client, message):
     bot_loop.create_task(
         Mirror(client, message, is_leech=True, is_nzb=True).new_event()
     )
+
+async def auto_merge_after_unzip(self, path):
+    """আনজিপের পর অটো ভিডিও মার্জ"""
+    import os
+    from bot.modules.merge import process_video
+    from bot.helper.telegram_helper.message_utils import editMessage
+
+    # আনজিপ ফোল্ডারে সব ভিডিও খুঁজো
+    videos = []
+    for root, _, files in os.walk(path):
+        for file in files:
+            if file.lower().endswith(('.mp4', '.mkv', '.avi', '.mov', '.webm')):
+                videos.append(os.path.join(root, file))
+
+    if len(videos) < 2:
+        await send_message(self.message, "আনজিপের পর 2টা ভিডিও পাওয়া যায়নি ❌")
+        return False
+
+    # ফেক মেসেজ বানিয়ে মার্জে পাঠাও
+    class FakeMessage:
+        def __init__(self, chat_id):
+            self.chat_id = chat_id
+
+    fake_msg = FakeMessage(self.message.chat.id)
+    await send_message(self.message, f"আনজিপ কমপ্লিট ✅ {len(videos)} টা ভিডিও পাওয়া গেছে। মার্জ শুরু হচ্ছে...")
+
+    # মার্জ কল করো
+    await process_video_video(self.client, fake_msg, {'chat_id': self.message.chat.id}, videos)
+    return True
