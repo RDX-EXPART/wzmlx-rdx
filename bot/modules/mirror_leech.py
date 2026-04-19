@@ -32,6 +32,16 @@ from ..helper.mirror_leech_utils.download_utils.direct_downloader import (
 from ..helper.mirror_leech_utils.download_utils.direct_link_generator import (
     direct_link_generator,
 )
+from..helper.mirror_leech_utils.download_utils.telegram_download import (
+    TelegramDownloadHelper,
+)
+from..helper.telegram_helper.message_utils import (
+    auto_delete_message,
+    delete_links,
+    get_tg_link_message,
+    send_message,
+)
+from bot.modules.merge import merge_handler # এই লাইন অ্যাড করুন
 from ..helper.mirror_leech_utils.download_utils.gd_download import add_gd_download
 from ..helper.mirror_leech_utils.download_utils.jd_download import add_jd_download
 from ..helper.mirror_leech_utils.download_utils.mega_download import add_mega_download
@@ -87,6 +97,22 @@ class Mirror(TaskListener):
     async def new_event(self):
         text = self.message.text.split("\n")
         input_list = text[0].split(" ")
+
+        async def new_event(self):
+    text = self.message.text.split("\n")
+    input_list = text[0].split(" ")
+
+    # Video Tool ফ্ল্যাগ চেক - WZML-X এর জন্য
+    if any(flag in input_list for flag in ['-vt', '--vt', '--videotool']):
+        if not self.message.reply_to_message:
+            return await send_message(
+                self.message,
+                "**VIDEOS TOOL SETTINGS**\n\nভিডিও/অডিও ফাইলে রিপ্লাই দিয়ে `/leech -vt` দিন"
+            )
+        return await merge_handler(self.client, self.message)
+
+    check_msg, check_button = await pre_task_check(self.message)
+    #... বাকি অরিজিনাল কোড
 
         check_msg, check_button = await pre_task_check(self.message)
         if check_msg:
