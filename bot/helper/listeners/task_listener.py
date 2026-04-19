@@ -1,8 +1,9 @@
 from asyncio import gather, sleep
 from time import time
+import os # এই লাইন অ্যাড করেছি
+from contextlib import suppress
 
 from aiofiles.os import makedirs, path as aiopath, remove
-from aiofiles.os import walk as aiowalk
 
 from... import (
     LOGGER,
@@ -13,11 +14,9 @@ from... import (
     queued_dl,
     queued_up,
     same_directory_lock,
-    task_dict,
     task_dict_lock,
 )
 from...core.config_manager import Config
-from...core.torrent_manager import TorrentManager
 from...core.torrent_manager import TorrentManager
 from..ext_utils.bot_utils import sync_to_async
 from..ext_utils.db_handler import database
@@ -39,6 +38,7 @@ from..telegram_helper.message_utils import (
     send_message,
     update_status_message,
 )
+from..ext_utils.task_manager import TaskConfig
 
 class TaskListener(TaskConfig):
     def __init__(self):
@@ -154,19 +154,17 @@ class TaskListener(TaskConfig):
         # ========== চেইন মোড: -e -vt এর জন্য ==========
         if hasattr(self, 'is_vt_chain') and self.is_vt_chain:
             from bot.modules.merge import process_video_video
-            import os
 
             videos = []
-            for root, _, files in os.walk(self.dir):
+            for root, _, files in os.walk(self.dir): # os.walk ইউজ করেছি
                 for file in files:
                     if file.lower().endswith(('.mp4', '.mkv', '.avi', '.mov', '.webm', '.m4v')):
                         videos.append(os.path.join(root, file))
 
             if len(videos) >= 2:
                 await send_message(self.message, f"আনজিপ শেষ ✅ {len(videos)} টা ভিডিও পেয়েছি। এখন মার্জ হচ্ছে...")
-                # প্রথম 2টা ভিডিও মার্জ করবে
                 await process_video_video(self.client, self.message, {'chat_id': self.message.chat.id}, videos[:2])
-                return # মার্জে পাঠিয়ে এখানেই শেষ
+                return
             else:
                 await send_message(self.message, "আনজিপের পর 2টা ভিডিও পাওয়া যায়নি, নরমাল আপলোড হচ্ছে")
         # ========== চেইন মোড শেষ ==========
@@ -182,7 +180,7 @@ class TaskListener(TaskConfig):
             )
             del LeechUploader
         else:
-            # Mirror/Rclone/YTDL কোড অপরিবর্তিত
+            # Mirror/Rclone কোড অপরিবর্তিত
             pass
 
     async def on_upload_complete(
@@ -202,7 +200,7 @@ class TaskListener(TaskConfig):
             f"\n┠ <b>Out Mode</b> → {self.mode[1]}"
         )
         LOGGER.info(f"Task Done: {self.name}")
-        #... বাকি on_upload_complete কোড অপরিবর্তিত
+        #... বাকি on_upload_complete কোড আপনার আগের মতোই রাখুন
 
     async def on_download_error(self, error, button=None):
         async with task_dict_lock:
@@ -241,3 +239,15 @@ class TaskListener(TaskConfig):
             await clean_download(self.up_dir)
         if self.thumb and await aiopath.exists(self.thumb):
             await remove(self.thumb)
+
+    async def on_upload_error(self, error):
+        async with task_dict_lock:
+            if self.mid in task_dict:
+                del task_dict[self.mid]
+            count = len(task_dict)
+        await send_message(self.message, f"{self.tag} {escape(str(error))}")
+        if count == 0:
+            await self.clean()
+        else:
+            await update_status_message(self.message.chat.id)
+        #... বাকি এরর হ্যান্ডলিং কোড
