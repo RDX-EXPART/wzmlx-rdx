@@ -1,4 +1,4 @@
-from ... import LOGGER
+from bot import LOGGER  # এই লাইন ঠিক করেছি
 from ...ext_utils.status_utils import (
     get_readable_file_size,
     EngineStatus,
@@ -51,5 +51,4 @@ class FfmpegStatus:
                 pass
         await self.listener.on_upload_error(f"{self._cstatus} stopped by user!")
 
-# এই লাইনটা জরুরি - ক্লাস এক্সপোর্ট করার জন্য
 __all__ = ['FfmpegStatus']
