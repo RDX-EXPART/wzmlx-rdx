@@ -257,11 +257,11 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
                 f"\n┌ Task By 👤 {task.listener.message.from_user.first_name} "
                 f"(#ID{task.listener.message.from_user.id})"
                 f"\n│ {get_progress_bar_string(progress)} {progress}"
-                f"\n│ Done » {task.processed_bytes()}"
-                f"\n│ Total » {task.size()}"
-                f"\n│ Status » {tstatus}"
-                f"\n│ Speed »  {task.speed()}"
-                f"\n│ ETA »  {task.eta()}"
+                f"\n│ <b>Done</b> » {task.processed_bytes()}"
+                f"\n│ <b>Total</b> » {task.size()}"
+                f"\n│ <b>Status</b> » {tstatus}"
+                f"\n│ <b>Speed</b> »  {task.speed()}"
+                f"\n│ <b>ETA</b> »  {task.eta()}"
             )
             if task.listener.subname:
                 subsize = f" / {get_readable_file_size(task.listener.subsize)}"
@@ -285,13 +285,13 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += f"\n│ <b>Time</b> → <i>{task.seeding_time()}</i> | <b>Elapsed</b> → <i>{get_readable_time(elapsed)}</i>"
         else:
             msg += f"\n│ <b>Size</b> → <i>{task.size()}</i>"
-        msg += f"\n│ Engine → {task.engine}"
-        msg += f"\n│ In Mode → #{task.listener.mode[0]}"
-        msg += f"\n│ Out Mode → #{task.listener.mode[1]}"
+        msg += f"\n│ <b>Engine</b> → {task.engine}"
+        msg += f"\n│ <b>In Mode</b> → #{task.listener.mode[0]}"
+        msg += f"\n│ <b>Out Mode</b> → #{task.listener.mode[1]}"
         # TODO: Add Bt Sel
         from ..telegram_helper.bot_commands import BotCommands
 
-        msg += f"\n<b>┖ Stop</b> → <i>/{BotCommands.CancelTaskCommand[1]}_{task.gid()}</i>\n\n"
+        msg += f"\n┖ <b>Stop</b> → <i>/{BotCommands.CancelTaskCommand[1]}_{task.gid()}</i>\n\n"
 
     if len(msg) == 0:
         if status == "All":
