@@ -413,7 +413,7 @@ class Mirror(TaskListener):
                 try:
                     bypass_status = await send_message(
                         self.message,
-                        "🔄 <b>Generating direct link...</b>\nBypass API is working on your link.",
+                        "🔄 <b>Generating direct link...</b>\nBypass working on your link.",
                     )
 
                     self.link = await sync_to_async(direct_link_generator, self.link)
@@ -425,7 +425,7 @@ class Mirror(TaskListener):
                     mode_text = "leech" if self.is_leech else "mirror"
                     await edit_message(
                         bypass_status,
-                        f"✅ <b>Direct link generated!</b>\n⚡ Adding to {mode_text} queue now...",
+                        f"✅ <b>Direct link generated!</b>\n🚀 link locked → Starting {mode_text}..."
                     )
                 except DirectDownloadLinkException as e:
                     e = str(e)
