@@ -333,7 +333,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
                 buttons.data_button(label, f"status {sid} st {status_value}")
     buttons.data_button("🔁 Refresh", f"status {sid} ref", position="header")
     button = buttons.build_menu(8)
-    msg += f"\n <b>⚡ Cᴘᴜ »</b> {cpu_percent()}% | <b>💾 Fʀᴇᴇ »</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
-    msg += f"\n <b>🖥️ Rᴀᴍ »</b> {virtual_memory().percent}% | <b>🕑 Uᴘ »</b> {get_readable_time(time() - bot_start_time)}"
-    msg += f"\n <b>📥 Dʟ »</b> {get_readable_file_size(dl_speed)} | <b>📤 Uᴘ »</b> {get_readable_file_size(up_speed)}"
+    msg += f"\n <b>Cᴘᴜ »</b> {cpu_percent()}% | <b>Fʀᴇᴇ »</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
+    msg += f"\n <b>Rᴀᴍ »</b> {virtual_memory().percent}% | <b>Uᴘ »</b> {get_readable_time(time() - bot_start_time)}"
+    msg += f"\n <b>Dʟ »</b> {get_readable_file_size(dl_speed)} | <b>Uᴘ »</b> {get_readable_file_size(up_speed)}"
     return msg, button
